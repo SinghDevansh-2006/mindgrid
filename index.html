@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MindGrid — Your Emotional Constellation</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Raleway:wght@300;400;500&display=swap');
+
+:root {
+  --bg:       #020c12;
+  --bg2:      #041520;
+  --teal:     #00f5d4;
+  --teal-dim: #00b89c;
+  --teal-gl:  #00f5d433;
+  --teal-f:   #00f5d411;
+  --cyan:     #00d4ff;
+  --cyan-gl:  #00d4ff33;
+  --joy:      #00f5d4;
+  --calm:     #4fc3f7;
+  --focus:    #b39ddb;
+  --anxious:  #ff8a65;
+  --melancholy:#546e7a;
+  --border:   #00f5d418;
+  --text:     #cce8e0;
+  --muted:    #3a6b60;
+  --display:  'Cinzel', serif;
+  --body:     'Raleway', sans-serif;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+
+html,body{
+  height:100%;overflow:hidden;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--body);
+  cursor:crosshair;
+}
+
+/* deep ocean particle bg */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 80%, #001a2e88, transparent),
+    radial-gradient(ellipse 60% 80% at 80% 20%, #00120f66, transparent),
+    radial-gradient(ellipse 40% 40% at 50% 50%, #00f5d405, transparent);
+  pointer-events:none;z-index:0;
+}
+
+/* bioluminescent floating particles */
+.particle{
+  position:fixed;border-radius:50%;
+  pointer-events:none;z-index:0;
+  animation:float-p linear infinite;
+  background:radial-gradient(circle, var(--teal) 0%, transparent 70%);
+}
+@keyframes float-p{
+  0%  {transform:translateY(100vh) translateX(0) scale(0);opacity:0;}
+  10% {opacity:1;}
+  90% {opacity:0.6;}
+  100%{transform:translateY(-10vh) translateX(var(--dx)) scale(1);opacity:0;}
+}
+
+/* ── LAYOUT ── */
+#app{
+  display:grid;
+  grid-template-columns:320px 1fr 300px;
+  grid-template-rows:64px 1fr 36px;
+  height:100vh;
+  position:relative;z-index:1;
+}
+
+/* ── TOPBAR ── */
+#topbar{
+  grid-column:1/-1;
+  display:flex;align-items:center;gap:20px;
+  padding:0 28px;
+  background:rgba(4,21,32,0.92);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(10px);
+}
+
+.logo{
+  font-family:var(--display);
+  font-size:22px;font-weight:600;
+  letter-spacing:4px;
+  color:var(--teal);
+  text-shadow:0 0 24px var(--teal),0 0 48px var(--teal-dim);
+  white-space:nowrap;
+}
+.logo-sub{
+  font-size:9px;letter-spacing:3px;
+  color:var(--muted);font-family:var(--body);
+  font-weight:300;margin-top:-4px;
+}
+
+.vdiv{width:1px;height:28px;background:var(--border);}
+
+.tstat{display:flex;flex-direction:column;gap:2px;}
+.tstat-l{font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;font-weight:500;}
+.tstat-v{font-family:var(--display);font-size:14px;color:var(--teal);text-shadow:0 0 10px var(--teal-gl);}
+
+.spacer{flex:1;}
+
+.date-display{
+  font-family:var(--display);font-size:11px;
+  color:var(--muted);letter-spacing:2px;
+  text-align:right;
+}
+
+/* ── LEFT PANEL ── */
+#left{
+  background:rgba(4,21,32,0.85);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  backdrop-filter:blur(8px);
+}
+
+.panel-title{
+  font-family:var(--display);
+  font-size:10px;letter-spacing:3px;
+  color:var(--muted);text-transform:uppercase;
+  padding:16px 20px 10px;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;
+}
+
+/* LOG ENTRY FORM */
+#logform{padding:16px 18px;border-bottom:1px solid var(--border);flex-shrink:0;}
+
+.form-section{margin-bottom:14px;}
+.flbl{
+  font-size:9px;letter-spacing:2px;color:var(--muted);
+  text-transform:uppercase;margin-bottom:6px;display:block;
+  font-weight:500;
+}
+
+/* mood selector pills */
+.mood-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.mood-pill{
+  padding:7px 4px;text-align:center;
+  border:1px solid var(--border);
+  border-radius:6px;cursor:pointer;
+  font-size:11px;font-family:var(--body);
+  transition:all 0.2s;background:transparent;
+  color:var(--muted);
+}
+.mood-pill:hover{border-color:var(--teal-dim);color:var(--text);}
+.mood-pill.sel{
+  border-color:var(--mood-color,var(--teal));
+  color:var(--mood-color,var(--teal));
+  background:var(--mood-bg,var(--teal-f));
+  text-shadow:0 0 8px var(--mood-color,var(--teal));
+  box-shadow:0 0 12px var(--mood-color,var(--teal-gl));
+}
+
+/* intensity slider */
+#intensity-wrap{position:relative;}
+input[type=range]{
+  -webkit-appearance:none;width:100%;height:4px;
+  background:linear-gradient(90deg,var(--teal-dim),var(--teal));
+  border-radius:2px;outline:none;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:16px;height:16px;
+  border-radius:50%;background:var(--teal);
+  box-shadow:0 0 10px var(--teal);cursor:pointer;
+  border:2px solid var(--bg);
+}
+.intensity-labels{
+  display:flex;justify-content:space-between;
+  font-size:9px;color:var(--muted);margin-top:4px;
+}
+#intensity-val{
+  font-family:var(--display);font-size:20px;
+  color:var(--teal);text-shadow:0 0 14px var(--teal);
+  text-align:center;margin-bottom:4px;
+}
+
+/* note textarea */
+.fnote{
+  width:100%;background:rgba(0,245,212,0.04);
+  border:1px solid var(--border);border-radius:6px;
+  color:var(--text);font-family:var(--body);font-size:12px;
+  padding:9px 11px;outline:none;resize:none;height:70px;
+  transition:border-color 0.2s;
+  letter-spacing:0.3px;
+}
+.fnote:focus{border-color:var(--teal-dim);box-shadow:0 0 10px var(--teal-f);}
+.fnote::placeholder{color:var(--muted);}
+
+.logbtn{
+  width:100%;padding:11px;
+  background:transparent;
+  border:1px solid var(--teal-dim);
+  border-radius:6px;
+  color:var(--teal);
+  font-family:var(--display);font-size:10px;letter-spacing:3px;
+  cursor:pointer;transition:all 0.25s;
+  position:relative;overflow:hidden;
+  text-transform:uppercase;
+}
+.logbtn::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--teal),var(--cyan));
+  transform:translateX(-100%);transition:transform 0.3s;z-index:0;
+}
+.logbtn:hover::before{transform:translateX(0);}
+.logbtn:hover{color:#000;border-color:var(--teal);}
+.logbtn span{position:relative;z-index:1;}
+
+/* recent entries list */
+#entries-list{
+  flex:1;overflow-y:auto;padding:12px 16px;
+  display:flex;flex-direction:column;gap:8px;
+  scrollbar-width:thin;scrollbar-color:var(--muted) transparent;
+}
+#entries-list::-webkit-scrollbar{width:3px;}
+#entries-list::-webkit-scrollbar-thumb{background:var(--muted);border-radius:2px;}
+
+.entry-card{
+  padding:10px 12px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--mood-color,var(--teal-dim));
+  border-radius:4px;
+  background:rgba(0,245,212,0.03);
+  transition:all 0.2s;cursor:pointer;
+  position:relative;
+}
+.entry-card:hover{background:rgba(0,245,212,0.07);transform:translateX(2px);}
+.entry-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.entry-mood{font-size:12px;font-weight:500;letter-spacing:0.5px;}
+.entry-time{font-size:9px;color:var(--muted);letter-spacing:1px;}
+.entry-note{font-size:11px;color:var(--muted);line-height:1.4;margin-top:2px;}
+.entry-intensity{
+  position:absolute;right:10px;bottom:8px;
+  font-family:var(--display);font-size:10px;color:var(--muted);
+}
+.del-btn{
+  position:absolute;top:6px;right:6px;
+  background:transparent;border:none;color:var(--muted);
+  cursor:pointer;font-size:11px;opacity:0;
+  transition:opacity 0.2s,color 0.2s;
+  padding:2px 5px;
+}
+.entry-card:hover .del-btn{opacity:1;}
+.del-btn:hover{color:#ff6b6b;}
+
+/* ── CANVAS MAP ── */
+#mapwrap{
+  position:relative;overflow:hidden;
+  background:transparent;
+}
+
+#starcanvas{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+}
+
+#tooltip{
+  position:absolute;
+  background:rgba(4,21,32,0.95);
+  border:1px solid var(--teal-dim);
+  border-radius:8px;
+  padding:10px 14px;
+  pointer-events:none;display:none;
+  z-index:10;min-width:180px;
+  box-shadow:0 0 20px var(--teal-gl);
+  backdrop-filter:blur(8px);
+}
+.tt-mood{font-family:var(--display);font-size:12px;color:var(--teal);letter-spacing:1px;margin-bottom:4px;}
+.tt-note{font-size:11px;color:var(--muted);line-height:1.5;}
+.tt-meta{font-size:9px;color:var(--muted);margin-top:6px;letter-spacing:1px;}
+
+/* center message when empty */
+#empty-msg{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  pointer-events:none;opacity:0;transition:opacity 0.5s;
+}
+#empty-msg.show{opacity:1;}
+.em-icon{font-size:48px;margin-bottom:16px;filter:drop-shadow(0 0 16px var(--teal));}
+.em-text{font-family:var(--display);font-size:14px;letter-spacing:3px;color:var(--muted);}
+.em-sub{font-size:11px;color:var(--muted);margin-top:6px;opacity:0.6;}
+
+/* ── RIGHT PANEL ── */
+#right{
+  background:rgba(4,21,32,0.85);
+  border-left:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  backdrop-filter:blur(8px);
+}
+
+/* stats cards */
+#stats-section{
+  padding:14px 16px;
+  border-bottom:1px solid var(--border);
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;
+  flex-shrink:0;
+}
+
+.stat-card{
+  background:rgba(0,245,212,0.04);
+  border:1px solid var(--border);
+  border-radius:8px;padding:12px;
+  text-align:center;
+  transition:all 0.2s;
+}
+.stat-card:hover{border-color:var(--teal-dim);background:rgba(0,245,212,0.08);}
+.sc-val{
+  font-family:var(--display);font-size:22px;
+  color:var(--teal);text-shadow:0 0 12px var(--teal);
+  margin-bottom:3px;
+}
+.sc-lbl{font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
+
+/* mood legend / breakdown */
+#mood-breakdown{
+  padding:14px 16px;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+
+.mood-bar-row{
+  display:flex;align-items:center;gap:8px;
+  margin-bottom:8px;
+}
+.mb-icon{font-size:14px;flex-shrink:0;width:20px;text-align:center;}
+.mb-name{font-size:10px;color:var(--muted);width:72px;flex-shrink:0;letter-spacing:0.5px;}
+.mb-track{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.mb-fill{height:100%;border-radius:2px;transition:width 0.8s ease;}
+.mb-ct{font-family:var(--display);font-size:10px;color:var(--muted);width:20px;text-align:right;flex-shrink:0;}
+
+/* timeline */
+#timeline{
+  flex:1;overflow-y:auto;padding:12px 16px;
+  scrollbar-width:thin;scrollbar-color:var(--muted) transparent;
+}
+#timeline::-webkit-scrollbar{width:3px;}
+#timeline::-webkit-scrollbar-thumb{background:var(--muted);}
+
+.tl-day{
+  margin-bottom:16px;
+}
+.tl-date{
+  font-family:var(--display);font-size:9px;
+  letter-spacing:2px;color:var(--muted);
+  margin-bottom:6px;
+  display:flex;align-items:center;gap:8px;
+}
+.tl-date::after{content:'';flex:1;height:1px;background:var(--border);}
+.tl-dots{display:flex;flex-wrap:wrap;gap:5px;}
+.tl-dot{
+  width:22px;height:22px;border-radius:50%;
+  border:1px solid transparent;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;cursor:pointer;
+  transition:all 0.2s;
+}
+.tl-dot:hover{transform:scale(1.3);box-shadow:0 0 10px var(--teal-gl);}
+
+/* ── STATUSBAR ── */
+#statusbar{
+  grid-column:1/-1;
+  height:36px;display:flex;align-items:center;
+  padding:0 20px;gap:18px;
+  border-top:1px solid var(--border);
+  background:rgba(4,21,32,0.92);
+  backdrop-filter:blur(8px);
+}
+.sb-i{font-size:9px;letter-spacing:1.5px;color:var(--muted);white-space:nowrap;}
+.sb-i.live{color:var(--teal);text-shadow:0 0 8px var(--teal-gl);}
+.sb-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);box-shadow:0 0 8px var(--teal);animation:sblink 2s ease-in-out infinite;flex-shrink:0;}
+@keyframes sblink{0%,100%{opacity:1;}50%{opacity:0.2;}}
+#sb-quote{flex:1;font-size:10px;color:var(--muted);font-style:italic;text-align:center;letter-spacing:0.5px;}
+
+/* ── TOAST ── */
+#toast{
+  position:fixed;bottom:50px;left:50%;transform:translateX(-50%) translateY(60px);
+  background:rgba(4,21,32,0.95);border:1px solid var(--teal);
+  border-radius:30px;padding:10px 22px;
+  font-family:var(--display);font-size:11px;letter-spacing:2px;
+  color:var(--teal);text-shadow:0 0 10px var(--teal);
+  box-shadow:0 0 24px var(--teal-gl);
+  transition:transform 0.35s ease;z-index:100;pointer-events:none;
+}
+#toast.show{transform:translateX(-50%) translateY(0);}
+
+/* ── RIPPLE on log ── */
+.ripple{
+  position:fixed;border-radius:50%;
+  border:2px solid var(--teal);
+  pointer-events:none;z-index:50;
+  animation:rip 0.7s ease-out forwards;
+}
+@keyframes rip{
+  0%  {width:0;height:0;opacity:0.8;margin:-0px;}
+  100%{width:80px;height:80px;opacity:0;margin:-40px;}
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <div>
+      <div class="logo">MindGrid</div>
+      <div class="logo-sub">your emotional constellation</div>
+    </div>
+    <div class="vdiv"></div>
+    <div class="tstat"><div class="tstat-l">Total Stars</div><div class="tstat-v" id="ts-total">0</div></div>
+    <div class="vdiv"></div>
+    <div class="tstat"><div class="tstat-l">Avg Intensity</div><div class="tstat-v" id="ts-avg">—</div></div>
+    <div class="vdiv"></div>
+    <div class="tstat"><div class="tstat-l">Day Streak</div><div class="tstat-v" id="ts-streak">0🌊</div></div>
+    <div class="vdiv"></div>
+    <div class="tstat"><div class="tstat-l">Dominant Mood</div><div class="tstat-v" id="ts-dom">—</div></div>
+    <div class="spacer"></div>
+    <div class="date-display" id="date-display"></div>
+  </div>
+
+  <!-- LEFT: log form + entries -->
+  <div id="left">
+    <div class="panel-title">
+      <span>Log a Moment</span>
+      <span id="entry-count" style="font-size:11px;color:var(--teal);">0 entries</span>
+    </div>
+
+    <div id="logform">
+      <!-- Mood selector -->
+      <div class="form-section">
+        <label class="flbl">How are you feeling?</label>
+        <div class="mood-grid">
+          <button class="mood-pill" data-mood="joy"        data-color="#00f5d4" data-emoji="✦" onclick="selMood(this)">✦ Joy</button>
+          <button class="mood-pill" data-mood="calm"       data-color="#4fc3f7" data-emoji="◈" onclick="selMood(this)">◈ Calm</button>
+          <button class="mood-pill" data-mood="focus"      data-color="#b39ddb" data-emoji="◉" onclick="selMood(this)">◉ Focus</button>
+          <button class="mood-pill" data-mood="anxious"    data-color="#ff8a65" data-emoji="⟡" onclick="selMood(this)">⟡ Anxious</button>
+          <button class="mood-pill" data-mood="melancholy" data-color="#546e7a" data-emoji="✧" onclick="selMood(this)">✧ Melancholy</button>
+          <button class="mood-pill" data-mood="gratitude"  data-color="#81c784" data-emoji="❋" onclick="selMood(this)">❋ Grateful</button>
+        </div>
+      </div>
+
+      <!-- Intensity -->
+      <div class="form-section">
+        <label class="flbl">Intensity</label>
+        <div id="intensity-val">5</div>
+        <input type="range" id="intensity" min="1" max="10" value="5"
+          oninput="document.getElementById('intensity-val').textContent=this.value"/>
+        <div class="intensity-labels"><span>whisper</span><span>storm</span></div>
+      </div>
+
+      <!-- Note -->
+      <div class="form-section">
+        <label class="flbl">What's on your mind? (optional)</label>
+        <textarea class="fnote" id="note" placeholder="A moment, a thought, a memory..."></textarea>
+      </div>
+
+      <button class="logbtn" onclick="logMood()"><span>✦ PLANT THIS STAR</span></button>
+    </div>
+
+    <!-- Recent entries -->
+    <div class="panel-title" style="border-top:none;">
+      <span>Recent Entries</span>
+    </div>
+    <div id="entries-list"></div>
+  </div>
+
+  <!-- CENTER: Constellation canvas -->
+  <div id="mapwrap">
+    <canvas id="starcanvas"></canvas>
+    <div id="empty-msg">
+      <div class="em-icon">✦</div>
+      <div class="em-text">Your sky is empty</div>
+      <div class="em-sub">Log your first mood to plant a star</div>
+    </div>
+    <div id="tooltip">
+      <div class="tt-mood" id="tt-mood"></div>
+      <div class="tt-note" id="tt-note"></div>
+      <div class="tt-meta" id="tt-meta"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Stats + timeline -->
+  <div id="right">
+    <div class="panel-title">Statistics</div>
+
+    <div id="stats-section">
+      <div class="stat-card"><div class="sc-val" id="sc-total">0</div><div class="sc-lbl">Total Entries</div></div>
+      <div class="stat-card"><div class="sc-val" id="sc-streak">0</div><div class="sc-lbl">Day Streak</div></div>
+      <div class="stat-card"><div class="sc-val" id="sc-avg">—</div><div class="sc-lbl">Avg Intensity</div></div>
+      <div class="stat-card"><div class="sc-val" id="sc-dom">—</div><div class="sc-lbl">Top Mood</div></div>
+    </div>
+
+    <div class="panel-title" style="border-top:none;">Mood Breakdown</div>
+    <div id="mood-breakdown" id="breakdown"></div>
+
+    <div class="panel-title" style="border-top:none;">Timeline</div>
+    <div id="timeline"></div>
+  </div>
+
+  <!-- STATUSBAR -->
+  <div id="statusbar">
+    <div class="sb-dot"></div>
+    <div class="sb-i live">MINDGRID ACTIVE</div>
+    <div class="sb-i">NODE.JS + EXPRESS BACKEND</div>
+    <div class="sb-i">JSON PERSISTENCE</div>
+    <div id="sb-quote"></div>
+    <div class="sb-i" id="sb-time"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────
+const API = 'http://localhost:3000/api';
+
+const MOOD_COLORS = {
+  joy:        '#00f5d4',
+  calm:       '#4fc3f7',
+  focus:      '#b39ddb',
+  anxious:    '#ff8a65',
+  melancholy: '#546e7a',
+  gratitude:  '#81c784',
+};
+
+const MOOD_EMOJIS = {
+  joy:'✦', calm:'◈', focus:'◉', anxious:'⟡', melancholy:'✧', gratitude:'❋'
+};
+
+const QUOTES = [
+  "Every feeling is a star worth naming.",
+  "Your emotions are data, not diagnoses.",
+  "The sky remembers every storm and every calm.",
+  "Feelings, like stars, are most visible in the dark.",
+  "You are the astronomer of your own inner universe.",
+];
+
+// ── STATE ─────────────────────────────────────────────────
+let entries    = [];
+let selMoodVal = null;
+let stars      = [];   // computed star positions
+let animFrame  = null;
+let hoveredStar= null;
+
+// ── INIT ──────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  initParticles();
+  updateDate();
+  setInterval(updateDate, 60000);
+  setInterval(rotateQuote, 8000);
+  rotateQuote();
+  fetchAll();
+  initCanvas();
+});
+
+// ── PARTICLES (bioluminescent) ────────────────────────────
+function initParticles() {
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 4 + 1;
+    const dur  = Math.random() * 15 + 10;
+    const delay= Math.random() * 15;
+    const dx   = (Math.random() - 0.5) * 200;
+    p.style.cssText = `
+      width:${size}px;height:${size}px;
+      left:${Math.random()*100}%;
+      --dx:${dx}px;
+      animation-duration:${dur}s;
+      animation-delay:-${delay}s;
+      opacity:${Math.random()*0.5+0.1};
+    `;
+    document.body.appendChild(p);
+  }
+}
+
+// ── DATE / CLOCK ──────────────────────────────────────────
+function updateDate() {
+  const now = new Date();
+  const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+  document.getElementById('date-display').innerHTML =
+    now.toLocaleDateString('en-US', opts) + '<br>' +
+    now.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
+  document.getElementById('sb-time').textContent =
+    now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+setInterval(()=>{
+  const n=new Date();
+  document.getElementById('sb-time').textContent=n.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+},1000);
+
+function rotateQuote() {
+  document.getElementById('sb-quote').textContent =
+    '"' + QUOTES[Math.floor(Math.random()*QUOTES.length)] + '"';
+}
+
+// ── API CALLS ─────────────────────────────────────────────
+async function fetchAll() {
+  try {
+    const [moodsRes, statsRes] = await Promise.all([
+      fetch(`${API}/moods`),
+      fetch(`${API}/stats`)
+    ]);
+    entries = await moodsRes.json();
+    const stats = await statsRes.json();
+    renderAll(stats);
+  } catch(e) {
+    // fallback demo data if server not running
+    entries = getDemoData();
+    renderAll(calcStats(entries));
+    showToast('Running in demo mode — start server for persistence');
+  }
+}
+
+async function logMood() {
+  if (!selMoodVal) { showToast('Please select a mood first ✦'); return; }
+  const intensity = document.getElementById('intensity').value;
+  const note      = document.getElementById('note').value.trim();
+  const emoji     = MOOD_EMOJIS[selMoodVal];
+
+  const payload = { mood: selMoodVal, intensity, note, emoji };
+
+  try {
+    const res = await fetch(`${API}/moods`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const entry = await res.json();
+    entries.push(entry);
+    renderAll(calcStats(entries));
+    showToast('✦ Star planted in your constellation');
+    // reset form
+    document.getElementById('note').value = '';
+    document.querySelectorAll('.mood-pill').forEach(p=>p.classList.remove('sel'));
+    selMoodVal = null;
+    // ripple effect
+    doRipple();
+  } catch(e) {
+    // offline fallback
+    const entry = {
+      id: Date.now().toString(), mood:selMoodVal, intensity:parseInt(intensity),
+      note, emoji, timestamp: new Date().toISOString()
+    };
+    entries.push(entry);
+    renderAll(calcStats(entries));
+    showToast('✦ Star planted (demo mode)');
+    document.getElementById('note').value='';
+    document.querySelectorAll('.mood-pill').forEach(p=>p.classList.remove('sel'));
+    selMoodVal=null;
+    doRipple();
+  }
+}
+
+async function deleteEntry(id) {
+  try {
+    await fetch(`${API}/moods/${id}`, {method:'DELETE'});
+  } catch(e) {}
+  entries = entries.filter(e => e.id !== id);
+  renderAll(calcStats(entries));
+  showToast('Entry removed from your sky');
+}
+
+// ── MOOD SELECTOR ─────────────────────────────────────────
+function selMood(btn) {
+  document.querySelectorAll('.mood-pill').forEach(p => p.classList.remove('sel'));
+  btn.classList.add('sel');
+  selMoodVal = btn.dataset.mood;
+  const color = btn.dataset.color;
+  btn.style.setProperty('--mood-color', color);
+  btn.style.setProperty('--mood-bg', color+'18');
+}
+
+// ── RENDER ALL ────────────────────────────────────────────
+function renderAll(stats) {
+  renderStats(stats);
+  renderEntries();
+  renderBreakdown(stats);
+  renderTimeline();
+  computeStars();
+  drawCanvas();
+  // topbar
+  document.getElementById('ts-total').textContent  = stats.total;
+  document.getElementById('ts-avg').textContent    = stats.avgIntensity || '—';
+  document.getElementById('ts-streak').textContent = (stats.streak||0) + '🌊';
+  document.getElementById('ts-dom').textContent    = stats.dominantMood
+    ? (MOOD_EMOJIS[stats.dominantMood]||'') + ' ' + stats.dominantMood : '—';
+  document.getElementById('entry-count').textContent = entries.length + ' entries';
+  // empty state
+  document.getElementById('empty-msg').classList.toggle('show', entries.length===0);
+}
+
+// ── STATS ─────────────────────────────────────────────────
+function renderStats(stats) {
+  document.getElementById('sc-total').textContent  = stats.total;
+  document.getElementById('sc-streak').textContent = stats.streak || 0;
+  document.getElementById('sc-avg').textContent    = stats.avgIntensity || '—';
+  document.getElementById('sc-dom').textContent    = stats.dominantMood
+    ? MOOD_EMOJIS[stats.dominantMood] : '—';
+}
+
+function calcStats(arr) {
+  if (!arr.length) return {total:0,avgIntensity:0,moodCounts:{},streak:0,dominantMood:null};
+  const moodCounts={};
+  let totalI=0;
+  arr.forEach(e=>{moodCounts[e.mood]=(moodCounts[e.mood]||0)+1;totalI+=e.intensity;});
+  const days=[...new Set(arr.map(e=>e.timestamp.split('T')[0]))].sort().reverse();
+  let streak=0;
+  for(let i=0;i<days.length;i++){
+    const exp=new Date(Date.now()-i*86400000).toISOString().split('T')[0];
+    if(days[i]===exp)streak++;else break;
+  }
+  return {
+    total:arr.length,
+    avgIntensity:(totalI/arr.length).toFixed(1),
+    moodCounts, streak,
+    dominantMood:Object.entries(moodCounts).sort((a,b)=>b[1]-a[1])[0]?.[0]
+  };
+}
+
+// ── ENTRIES LIST ──────────────────────────────────────────
+function renderEntries() {
+  const list = document.getElementById('entries-list');
+  list.innerHTML = '';
+  [...entries].reverse().slice(0,20).forEach(e => {
+    const color = MOOD_COLORS[e.mood] || '#00f5d4';
+    const d=document.createElement('div');
+    d.className='entry-card';
+    d.style.setProperty('--mood-color',color);
+    const dt=new Date(e.timestamp);
+    const ts=dt.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+
+              dt.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    d.innerHTML=`
+      <button class="del-btn" onclick="event.stopPropagation();deleteEntry('${e.id}')">✕</button>
+      <div class="entry-top">
+        <span class="entry-mood" style="color:${color};text-shadow:0 0 8px ${color}44;">
+          ${e.emoji||MOOD_EMOJIS[e.mood]||'✦'} ${e.mood}
+        </span>
+        <span class="entry-time">${ts}</span>
+      </div>
+      ${e.note?`<div class="entry-note">${e.note}</div>`:''}
+      <div class="entry-intensity" style="color:${color}88;">◉${e.intensity}/10</div>`;
+    list.appendChild(d);
+  });
+}
+
+// ── BREAKDOWN ─────────────────────────────────────────────
+function renderBreakdown(stats) {
+  const el = document.getElementById('mood-breakdown');
+  el.innerHTML = '';
+  const total = stats.total || 1;
+  const moods = Object.entries(stats.moodCounts||{}).sort((a,b)=>b[1]-a[1]);
+  if (!moods.length) {
+    el.innerHTML='<div style="font-size:10px;color:var(--muted);padding:4px 0;">No data yet</div>';
+    return;
+  }
+  moods.forEach(([mood,ct])=>{
+    const color=MOOD_COLORS[mood]||'#00f5d4';
+    const pct=Math.round(ct/total*100);
+    const row=document.createElement('div');
+    row.className='mood-bar-row';
+    row.innerHTML=`
+      <span class="mb-icon">${MOOD_EMOJIS[mood]||'✦'}</span>
+      <span class="mb-name">${mood}</span>
+      <div class="mb-track"><div class="mb-fill" style="width:${pct}%;background:${color};box-shadow:0 0 6px ${color}66;"></div></div>
+      <span class="mb-ct">${ct}</span>`;
+    el.appendChild(row);
+  });
+}
+
+// ── TIMELINE ──────────────────────────────────────────────
+function renderTimeline() {
+  const tl = document.getElementById('timeline');
+  tl.innerHTML='';
+  const byDay={};
+  entries.forEach(e=>{
+    const d=e.timestamp.split('T')[0];
+    if(!byDay[d])byDay[d]=[];
+    byDay[d].push(e);
+  });
+  Object.entries(byDay).sort((a,b)=>b[0].localeCompare(a[0])).forEach(([day,es])=>{
+    const dt=new Date(day);
+    const lbl=dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    const div=document.createElement('div');div.className='tl-day';
+    const dots=es.map(e=>{
+      const color=MOOD_COLORS[e.mood]||'#00f5d4';
+      return `<div class="tl-dot" title="${e.mood}" style="background:${color}22;border-color:${color}66;color:${color};box-shadow:0 0 6px ${color}33;">${MOOD_EMOJIS[e.mood]||'✦'}</div>`;
+    }).join('');
+    div.innerHTML=`<div class="tl-date">${lbl}</div><div class="tl-dots">${dots}</div>`;
+    tl.appendChild(div);
+  });
+}
+
+// ── CANVAS CONSTELLATION ──────────────────────────────────
+const canvas = document.getElementById('starcanvas');
+const ctx    = canvas.getContext('2d');
+let W=0, H=0;
+
+function initCanvas() {
+  resize();
+  window.addEventListener('resize', resize);
+  canvas.addEventListener('mousemove', onHover);
+  canvas.addEventListener('mouseleave', ()=>{hoveredStar=null;document.getElementById('tooltip').style.display='none';});
+  animate();
+}
+
+function resize() {
+  const wrap = document.getElementById('mapwrap');
+  W = canvas.width  = wrap.clientWidth;
+  H = canvas.height = wrap.clientHeight;
+  computeStars();
+}
+
+// assign each entry a stable position using a seeded spread
+function computeStars() {
+  // Sort by date
+  const sorted = [...entries].sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp));
+  stars = sorted.map((e, i) => {
+    // deterministic position based on id hash
+    const seed = hashStr(e.id);
+    const angle = (seed % 360) * Math.PI / 180;
+    const radius= (0.15 + (seed % 100)/100 * 0.38) * Math.min(W,H);
+    const cx = W/2 + Math.cos(angle) * radius;
+    const cy = H/2 + Math.sin(angle) * radius;
+    // add slight drift per entry index
+    const jx = Math.cos(i * 2.4) * 40;
+    const jy = Math.sin(i * 1.7) * 40;
+    return {
+      ...e,
+      x: Math.max(30, Math.min(W-30, cx+jx)),
+      y: Math.max(30, Math.min(H-30, cy+jy)),
+      r: 3 + e.intensity * 0.6,
+      color: MOOD_COLORS[e.mood] || '#00f5d4',
+      phase: Math.random() * Math.PI * 2,
+      speed: 0.4 + Math.random() * 0.6,
+    };
+  });
+}
+
+function hashStr(s) {
+  let h=0;
+  for(let i=0;i<s.length;i++)h=(Math.imul(31,h)+s.charCodeAt(i))|0;
+  return Math.abs(h);
+}
+
+let tick=0;
+function animate() {
+  tick += 0.016;
+  drawCanvas();
+  animFrame = requestAnimationFrame(animate);
+}
+
+function drawCanvas() {
+  ctx.clearRect(0,0,W,H);
+
+  if (!stars.length) return;
+
+  // draw constellation lines between chronologically adjacent stars
+  for (let i=1; i<stars.length; i++) {
+    const a=stars[i-1], b=stars[i];
+    const dist=Math.hypot(b.x-a.x, b.y-a.y);
+    if (dist < 220) {
+      const alpha = Math.max(0.04, 0.2 - dist/220*0.16);
+      const grad=ctx.createLinearGradient(a.x,a.y,b.x,b.y);
+      grad.addColorStop(0, a.color+'44');
+      grad.addColorStop(1, b.color+'44');
+      ctx.beginPath();
+      ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);
+      ctx.strokeStyle=grad;
+      ctx.lineWidth=0.8;
+      ctx.globalAlpha=alpha;
+      ctx.stroke();
+      ctx.globalAlpha=1;
+    }
+  }
+
+  // draw stars
+  stars.forEach((s,i) => {
+    const pulse = Math.sin(tick * s.speed + s.phase);
+    const r     = s.r + pulse * 0.8;
+    const glow  = s.r * 3 + pulse * 2;
+    const isHov = hoveredStar && hoveredStar.id===s.id;
+
+    // outer glow
+    const g1=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,glow*(isHov?2.5:1.8));
+    g1.addColorStop(0, s.color+(isHov?'55':'33'));
+    g1.addColorStop(1, 'transparent');
+    ctx.beginPath();ctx.arc(s.x,s.y,glow*(isHov?2.5:1.8),0,Math.PI*2);
+    ctx.fillStyle=g1;ctx.fill();
+
+    // star core
+    const g2=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,r*(isHov?1.6:1));
+    g2.addColorStop(0,'#ffffff');
+    g2.addColorStop(0.3,s.color);
+    g2.addColorStop(1,'transparent');
+    ctx.beginPath();ctx.arc(s.x,s.y,r*(isHov?1.6:1),0,Math.PI*2);
+    ctx.fillStyle=g2;ctx.fill();
+
+    // cross sparkle for high intensity
+    if (s.intensity >= 7) {
+      ctx.save();
+      ctx.translate(s.x,s.y);
+      ctx.rotate(tick*0.3);
+      ctx.strokeStyle=s.color+'88';
+      ctx.lineWidth=0.8;
+      const len=r*2.5+pulse;
+      [0,Math.PI/2,Math.PI/4,Math.PI*3/4].forEach(a=>{
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(a)*r*0.5,Math.sin(a)*r*0.5);
+        ctx.lineTo(Math.cos(a)*len,Math.sin(a)*len);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(-Math.cos(a)*r*0.5,-Math.sin(a)*r*0.5);
+        ctx.lineTo(-Math.cos(a)*len,-Math.sin(a)*len);
+        ctx.stroke();
+      });
+      ctx.restore();
+    }
+  });
+}
+
+// ── HOVER ─────────────────────────────────────────────────
+function onHover(e) {
+  const rect=canvas.getBoundingClientRect();
+  const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+  let found=null;
+  for(const s of stars){
+    if(Math.hypot(mx-s.x,my-s.y)<s.r*3+10){found=s;break;}
+  }
+  hoveredStar=found;
+  const tip=document.getElementById('tooltip');
+  if(found){
+    tip.style.display='block';
+    const px=e.clientX-document.getElementById('mapwrap').getBoundingClientRect().left;
+    const py=e.clientY-document.getElementById('mapwrap').getBoundingClientRect().top;
+    tip.style.left=(px+16)+'px';
+    tip.style.top=(py-20)+'px';
+    const dt=new Date(found.timestamp);
+    const color=found.color;
+    document.getElementById('tt-mood').style.color=color;
+    document.getElementById('tt-mood').style.textShadow=`0 0 10px ${color}`;
+    document.getElementById('tt-mood').textContent=`${found.emoji||MOOD_EMOJIS[found.mood]||'✦'} ${found.mood} — intensity ${found.intensity}/10`;
+    document.getElementById('tt-note').textContent=found.note||'No note written';
+    document.getElementById('tt-meta').textContent=dt.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  } else {
+    tip.style.display='none';
+  }
+  canvas.style.cursor=found?'pointer':'crosshair';
+}
+
+// ── RIPPLE ────────────────────────────────────────────────
+function doRipple() {
+  const btn=document.querySelector('.logbtn');
+  const r=btn.getBoundingClientRect();
+  const rip=document.createElement('div');
+  rip.className='ripple';
+  rip.style.left=(r.left+r.width/2)+'px';
+  rip.style.top=(r.top+r.height/2)+'px';
+  document.body.appendChild(rip);
+  setTimeout(()=>rip.remove(),800);
+}
+
+// ── TOAST ─────────────────────────────────────────────────
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ── DEMO DATA (fallback if server offline) ────────────────
+function getDemoData() {
+  return [
+    {id:'d1',mood:'joy',intensity:8,note:'Really good day, aced my DSA lab',emoji:'✦',timestamp:'2025-11-01T09:00:00.000Z'},
+    {id:'d2',mood:'calm',intensity:6,note:'Studied OS, feeling okay',emoji:'◈',timestamp:'2025-11-02T14:00:00.000Z'},
+    {id:'d3',mood:'anxious',intensity:7,note:'Exam pressure building up',emoji:'⟡',timestamp:'2025-11-03T20:00:00.000Z'},
+    {id:'d4',mood:'joy',intensity:9,note:'Got selected for hackathon!',emoji:'✦',timestamp:'2025-11-05T11:00:00.000Z'},
+    {id:'d5',mood:'melancholy',intensity:5,note:'Missing home a bit',emoji:'✧',timestamp:'2025-11-07T22:00:00.000Z'},
+    {id:'d6',mood:'focus',intensity:8,note:'Deep work session, built the calculator app',emoji:'◉',timestamp:'2025-11-09T16:00:00.000Z'},
+    {id:'d7',mood:'gratitude',intensity:7,note:'Grateful for good friends',emoji:'❋',timestamp:'2025-11-11T19:00:00.000Z'},
+    {id:'d8',mood:'joy',intensity:10,note:'Won 3rd place at BITS Pilani contest!',emoji:'✦',timestamp:'2025-11-14T21:00:00.000Z'},
+    {id:'d9',mood:'calm',intensity:7,note:'Long walk, cleared my head',emoji:'◈',timestamp:'2025-11-16T18:00:00.000Z'},
+    {id:'d10',mood:'focus',intensity:9,note:'Hackathon prep, in the zone',emoji:'◉',timestamp:'2025-11-18T15:00:00.000Z'},
+    {id:'d11',mood:'melancholy',intensity:4,note:'Tired, need a break',emoji:'✧',timestamp:'2025-11-20T23:00:00.000Z'},
+    {id:'d12',mood:'joy',intensity:8,note:'Friends hangout, laughed a lot',emoji:'✦',timestamp:'2025-11-22T20:00:00.000Z'},
+  ];
+}
+</script>
+</body>
+</html>

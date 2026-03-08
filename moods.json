@@ -1,0 +1,108 @@
+{
+  "entries": [
+    {
+      "id": "1700000001",
+      "mood": "joy",
+      "intensity": 8,
+      "note": "Really good day, aced my DSA lab",
+      "emoji": "✦",
+      "timestamp": "2025-11-01T09:00:00.000Z"
+    },
+    {
+      "id": "1700000002",
+      "mood": "calm",
+      "intensity": 6,
+      "note": "Studied OS, feeling okay",
+      "emoji": "◈",
+      "timestamp": "2025-11-02T14:00:00.000Z"
+    },
+    {
+      "id": "1700000003",
+      "mood": "anxious",
+      "intensity": 7,
+      "note": "Exam pressure building up",
+      "emoji": "⟡",
+      "timestamp": "2025-11-03T20:00:00.000Z"
+    },
+    {
+      "id": "1700000004",
+      "mood": "joy",
+      "intensity": 9,
+      "note": "Got selected for hackathon!",
+      "emoji": "✦",
+      "timestamp": "2025-11-05T11:00:00.000Z"
+    },
+    {
+      "id": "1700000005",
+      "mood": "melancholy",
+      "intensity": 5,
+      "note": "Missing home a bit",
+      "emoji": "✧",
+      "timestamp": "2025-11-07T22:00:00.000Z"
+    },
+    {
+      "id": "1700000006",
+      "mood": "focus",
+      "intensity": 8,
+      "note": "Deep work session, built the calculator app",
+      "emoji": "◉",
+      "timestamp": "2025-11-09T16:00:00.000Z"
+    },
+    {
+      "id": "1700000007",
+      "mood": "anxious",
+      "intensity": 6,
+      "note": "Internship season stress",
+      "emoji": "⟡",
+      "timestamp": "2025-11-11T19:00:00.000Z"
+    },
+    {
+      "id": "1700000008",
+      "mood": "joy",
+      "intensity": 10,
+      "note": "Won 3rd place at BITS Pilani contest!",
+      "emoji": "✦",
+      "timestamp": "2025-11-14T21:00:00.000Z"
+    },
+    {
+      "id": "1700000009",
+      "mood": "calm",
+      "intensity": 7,
+      "note": "Long walk, cleared my head",
+      "emoji": "◈",
+      "timestamp": "2025-11-16T18:00:00.000Z"
+    },
+    {
+      "id": "1700000010",
+      "mood": "focus",
+      "intensity": 9,
+      "note": "Hackathon prep, in the zone",
+      "emoji": "◉",
+      "timestamp": "2025-11-18T15:00:00.000Z"
+    },
+    {
+      "id": "1700000011",
+      "mood": "melancholy",
+      "intensity": 4,
+      "note": "Tired, need a break",
+      "emoji": "✧",
+      "timestamp": "2025-11-20T23:00:00.000Z"
+    },
+    {
+      "id": "1700000012",
+      "mood": "joy",
+      "intensity": 8,
+      "note": "Friends hangout, laughed a lot",
+      "emoji": "✦",
+      "timestamp": "2025-11-22T20:00:00.000Z"
+    },
+    {
+      "id": "1772975367836",
+      "mood": "joy",
+      "intensity": 10,
+      "note": "Speaking cute stuff with mumma",
+      "emoji": "✦",
+      "timestamp": "2026-03-08T13:09:27.836Z"
+    }
+  ]
+}
